@@ -2,13 +2,38 @@ import os, sys
 
 from PIL import Image
 import numpy as np
+from struct import unpack
+from io  import BytesIO
 
 from pretz import defs, zips, strs, crypts, wwww, pamu, imgs, clickp
 
 #def ColorFrom32bitRGBA(d: typing.BinaryIO):
 #	return struct.unpack('<BBBB', d.read(4))
+def testing_binfiles(reader: clickp.FileReader, select_number: int):
+	binfiles = reader.pam_section.get_item(83)
+	f = BytesIO(binfiles.get_data())
+	count  = unpack('<L', f.read(4))[0]
+	for i in range(0, count):
+		name_len = unpack('<H', f.read(2))[0]
 
-def testing_images(reader: clickp.FileReader, select_number):
+		if reader.pam_section.unicode:
+			name_wide = f.read(name_len *2)
+			name = name_wide.decode('utf-16')
+		else:
+			name = f.read(name_len)
+
+		print(i, name)
+
+		data_len = unpack('<L', f.read(4))[0]
+		if select_number == i:
+			data = f.read(data_len)
+			print(data)
+			break
+		else:
+			f.seek(data_len, os.SEEK_CUR)
+
+
+def testing_images(reader: clickp.FileReader, select_number: int):
 	#with reader.pam_section.items[77].cache_file() as f:
 	imageBank = reader.pam_section.get_item(77)
 	#imgs.ImageBank(f, reader.pam_section.product_build, reader.new_game, reader.ccn_game)
@@ -50,5 +75,6 @@ if __name__ == '__main__':
 	clickPretz.analyze()
 	#click_Pretz.wwww_section.testing(False)
 	#clickPretz.pam_section.testing(True)
-	testing_images(clickPretz, select_number)
+	#testing_images(clickPretz, select_number)
 	#print(clickPretz.pam_section.get_item(3))
+	testing_binfiles(clickPretz, select_number)

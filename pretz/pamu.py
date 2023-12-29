@@ -261,8 +261,6 @@ class Section:
 		match defs.chunk_type(item.chunk_id):
 			case 'title':
 				return self.to_string(data)
-			case 'title2':
-				return data
 			case 'output_path':
 				return self.to_string(data)
 			case 'project_path':
@@ -275,6 +273,8 @@ class Section:
 				return self.to_string(data)
 			case 'image_bank':
 				return imgs.ImageBank(data, self.product_build, self.new_game, self.ccn_game)
+			case _:
+				return item
 
 	def testing(self, dump=False):
 		for item in self.items:
