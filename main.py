@@ -9,31 +9,32 @@ from pretz import defs, zips, strs, crypts, wwww, pamu, imgs, clickp
 #	return struct.unpack('<BBBB', d.read(4))
 
 def testing_images(reader: clickp.FileReader, select_number):
-	with reader.pam_section.items[77].cache_file() as f:
-		imageBank = imgs.ImageBank(f, reader.pam_section.product_build, reader.new_game, reader.ccn_game)
-		imageBank.parse()
+	#with reader.pam_section.items[77].cache_file() as f:
+	imageBank = reader.pam_section.get_item(77)
+	#imgs.ImageBank(f, reader.pam_section.product_build, reader.new_game, reader.ccn_game)
+	imageBank.parse()
 
-		select_numbers = list([select_number])
-		show_image = None
-		if select_number == -1:
-			select_numbers = range(0, len(imageBank.items))
+	select_numbers = list([select_number])
+	show_image = None
+	if select_number == -1:
+		select_numbers = range(0, len(imageBank.items))
 
-		print('select_number =', select_number)
-		for select_number in select_numbers:
-			item = imageBank.items[select_number]
+	print('select_number =', select_number)
+	for select_number in select_numbers:
+		item = imageBank.items[select_number]
 
-			print("create image... idx =", item.idx)
-			pixels = item.get_pixels()
-			img = Image.fromarray(pixels, 'RGBA')
+		print("create image... idx =", item.idx)
+		pixels = item.get_pixels()
+		img = Image.fromarray(pixels, 'RGBA')
 
-			if len(select_numbers) == 1:
-				show_image = img
-			elif item.experiment_show:
-				if item.idx <= 100: continue
-				show_image = img
-				break
+		if len(select_numbers) == 1:
+			show_image = img
+		elif item.experiment_show:
+			if item.idx <= 100: continue
+			show_image = img
+			break
 
-		if show_image: show_image.show()
+	if show_image: show_image.show()
 
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
@@ -50,3 +51,4 @@ if __name__ == '__main__':
 	#click_Pretz.wwww_section.testing(False)
 	#clickPretz.pam_section.testing(True)
 	testing_images(clickPretz, select_number)
+	#print(clickPretz.pam_section.get_item(3))

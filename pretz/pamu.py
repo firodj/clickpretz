@@ -1,7 +1,8 @@
 from typing import BinaryIO, cast
 import os
-from . import zips, defs, crypts, strs
+from . import zips, defs, crypts, strs, imgs
 from struct import unpack, pack
+from io import BytesIO
 
 class Item:
 	def __init__(self, pam_section, f: BinaryIO):
@@ -79,6 +80,12 @@ class Item:
 		name = "%s_%03d.bin" % (defs.chunk_type(self.chunk_id), self.idx)
 		return open('out/chunks/' + name, "rb")
 
+	def cache_dump(self):
+		name = "%s_%03d.bin" % (defs.chunk_type(self.chunk_id), self.idx)
+		print("dump to out/chunks/%s"  %  (name))
+		with open('out/chunks/' + name, "wb") as u:
+			u.write(self.get_data())
+
 class Section:
 	def __init__(self, f, start):
 		self.f: BinaryIO = f
@@ -94,6 +101,7 @@ class Section:
 		self.entry_ofs = None
 		self.decryptor = None
 		self.items: list[Item] = []
+		self.ccn_game = None
 
 	def parse(self):
 		f = self.f
@@ -238,7 +246,35 @@ class Section:
 		return item
 
 	def to_string(self, data):
+		if type(data) is bytes:
+			data = BytesIO(data)
 		return strs.String(data, self.unicode)
+
+	def get_item(self, idx: int):
+		item = self.items[idx]
+		data = None
+		try:
+			data = item.cache_file() #get_data()
+		finally:
+			data = BytesIO(item.get_data())
+
+		match defs.chunk_type(item.chunk_id):
+			case 'title':
+				return self.to_string(data)
+			case 'title2':
+				return data
+			case 'output_path':
+				return self.to_string(data)
+			case 'project_path':
+				return self.to_string(data)
+			case 'author':
+				return self.to_string(data)
+			case 'about':
+				return self.to_string(data)
+			case 'copyright':
+				return self.to_string(data)
+			case 'image_bank':
+				return imgs.ImageBank(data, self.product_build, self.new_game, self.ccn_game)
 
 	def testing(self, dump=False):
 		for item in self.items:
@@ -276,7 +312,4 @@ class Section:
 					raise Exception("unknown chunk_id = %04x" % (self.chunk_id,))
 
 			if dump:
-				name = "%s_%03d.bin" % (defs.chunk_type(item.chunk_id), item.idx)
-				print("dump to out/chunks/%s"  %  (name))
-				with open('out/chunks/' + name, "wb") as u:
-					u.write(data)
+				item.cache_dump()

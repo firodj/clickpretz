@@ -23,9 +23,9 @@ class Crypt:
 		for f in fields:
 			if f is None:
 				continue
-			if len(f.data) == 0:
+			if len(f) == 0:
 				continue
-			for b in f.data:
+			for b in f:
 				if b != 0:
 					keystring.append(b)
 

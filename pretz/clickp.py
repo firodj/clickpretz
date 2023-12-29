@@ -5,7 +5,8 @@ from . import wwww, pamu
 class FileReader:
 	def __init__(self, filename):
 		self.filename = filename
-		self.ccn_game = None
+		self.ccn_game: bool = None
+		self.new_game: bool = None
 		self.wwww_section = None
 
 	def dump(self):
@@ -42,4 +43,6 @@ class FileReader:
 			print("warning: entry_start_ofs different")
 
 		self.pam_section = pamu.Section(f, entry_start_ofs)
+		self.pam_section.new_game = self.new_game
+		self.pam_section.ccn_game = self.ccn_game
 		self.pam_section.parse()
