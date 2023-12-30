@@ -77,13 +77,13 @@ class Item:
 														self.chunk_id, self.mode, self.chunk_size)
 
 	def cache_file(self):
-		name = "%s_%03d.bin" % (defs.chunk_type(self.chunk_id), self.idx)
-		return open('out/chunks/' + name, "rb")
+		filename = "out/pamu/%s;%d.bin" % (defs.chunk_type(self.chunk_id), self.idx)
+		return open(filename, "rb")
 
 	def cache_dump(self):
-		name = "%s_%03d.bin" % (defs.chunk_type(self.chunk_id), self.idx)
-		print("dump to out/chunks/%s"  %  (name))
-		with open('out/chunks/' + name, "wb") as u:
+		filename = "out/pamu/%s;%d.bin" % (defs.chunk_type(self.chunk_id), self.idx)
+		print("dump to:", filename)
+		with open(filename, "wb") as u:
 			u.write(self.get_data())
 
 class Section:

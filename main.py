@@ -73,7 +73,7 @@ if __name__ == '__main__':
 	filename = sys.argv[1]
 	clickPretz = clickp.FileReader(filename)
 	clickPretz.analyze()
-	#click_Pretz.wwww_section.testing(False)
+	#clickPretz.wwww_section.testing(True)
 	#clickPretz.pam_section.testing(True)
 	#testing_images(clickPretz, select_number)
 	#print(clickPretz.pam_section.get_item(3))

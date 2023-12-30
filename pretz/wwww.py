@@ -117,6 +117,8 @@ class Section:
 		for item in self.items:
 			data = item.get_data()
 			if dump:
-				print("dump to out/%s"  %  (item.name,))
-				with open('out/' + item.name, "wb") as u:
+				basename, ext = os.path.splitext(item.name)
+				filename = "out/wwww/%s;%d%s" % (basename, item.idx, ext)
+				print("dump to:", filename)
+				with open(filename, "wb") as u:
 					u.write(data)
