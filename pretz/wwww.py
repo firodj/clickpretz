@@ -1,6 +1,6 @@
 from typing import cast, BinaryIO
 from struct import unpack, pack
-import os
+import os, re
 from . import zips
 
 """ wwww.Item """
@@ -29,6 +29,10 @@ class Item:
 
 	def __repr__(self):
 		return 'wwww.Item(idx=%d,name="%s",compress="%s",size=%d)' % (self.idx, self.name, self.compress, self.data_size)
+
+	def cache_file(self):
+		basename, ext = os.path.splitext(self.name)
+		return "out/wwww/%s;%d%s" % (basename, self.idx, ext)
 
 """ wwww.Section """
 class Section:
@@ -113,12 +117,28 @@ class Section:
 
 			f.seek(item.data_size - 2, os.SEEK_CUR)
 
+	def glob(self):
+		path = 'out/wwww'
+		fnames = [fname for fname in os.listdir(path) if os.path.isfile(path + os.path.sep + fname)]
+
+		refname = re.compile(r'^(.+);([^.;]+)(\.[^.]+)?$')
+
+		for fname in fnames:
+			m = refname.match(fname)
+			if not m: continue
+
+			name = m.group(1) + m.group(3)
+			item = Item(self.f)
+			item.name = name
+			item.idx = int(m.group(2))
+
+			print(item)
+
 	def testing(self, dump = False):
 		for item in self.items:
 			data = item.get_data()
 			if dump:
-				basename, ext = os.path.splitext(item.name)
-				filename = "out/wwww/%s;%d%s" % (basename, item.idx, ext)
+				filename =item.cache_file()
 				print("dump to:", filename)
 				with open(filename, "wb") as u:
 					u.write(data)

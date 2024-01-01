@@ -8,6 +8,8 @@ class FileReader:
 		self.ccn_game: bool = None
 		self.new_game: bool = None
 		self.wwww_section = None
+		self.pam_section = None
+		self.f = None
 
 	def dump(self):
 		print("analyzing pe %s" % (self.filename,))
@@ -23,8 +25,8 @@ class FileReader:
 	def analyze(self):
 		if not os.path.exists(self.filename + ".app"):
 			self.dump()
-		self.filehandle = open(self.filename + ".app", "rb")
-		f = self.filehandle
+		self.f = open(self.filename + ".app", "rb")
+		f = self.f
 
 		pos = f.tell()
 
@@ -46,3 +48,8 @@ class FileReader:
 		self.pam_section.new_game = self.new_game
 		self.pam_section.ccn_game = self.ccn_game
 		self.pam_section.parse()
+
+class FileWriter:
+	def __init__(self):
+		self.ccn_game = False
+		self.new_game = True
