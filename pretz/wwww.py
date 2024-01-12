@@ -2,6 +2,7 @@ from typing import cast, BinaryIO
 from struct import unpack, pack
 import os, re
 from . import zips
+import yaml
 
 """ wwww.Item """
 class Item:
@@ -14,6 +15,9 @@ class Item:
 		self.data_size: int = 0
 		self.data_ofs: int = None
 		self.compress = ''
+
+		self.w_fdata = ''
+		self.w_clevel = 0
 
 	def get_data(self):
 		f = self.f
@@ -33,6 +37,15 @@ class Item:
 	def cache_file(self):
 		basename, ext = os.path.splitext(self.name)
 		return "out/wwww/%s;%d%s" % (basename, self.idx, ext)
+
+	def meta(self):
+		d = {
+			'idx': self.idx,
+			'name': self.name,
+			'bingo': self.bingo,
+			'compress': self.compress,
+		}
+		return d
 
 """ wwww.Section """
 class Section:
@@ -123,15 +136,44 @@ class Section:
 
 		refname = re.compile(r'^(.+);([^.;]+)(\.[^.]+)?$')
 
+		items = []
 		for fname in fnames:
 			m = refname.match(fname)
 			if not m: continue
 
 			name = m.group(1) + m.group(3)
-			item = Item(self.f)
+			item = Item(None)
 			item.name = name
 			item.idx = int(m.group(2))
+			item.w_fdata = path + os.path.sep + fname
 
+			with open(path + os.path.sep + fname + ".meta", 'r') as u:
+				d = yaml.safe_load(u)
+				if d['idx'] != item.idx:
+					raise Exception("wrong meta")
+				item.bingo = d['bingo']
+				item.compress = d['compress']
+
+			with open(item.w_fdata, 'rb') as f:
+				data = f.read()
+				item.w_clevel = 0
+				match item.compress:
+					case 'best':
+						item.w_clevel = 9
+					case 'default':
+						item.w_clevel = 6
+					case 'low':
+						item.w_clevel = 1
+
+				if item.w_clevel > 0:
+					data = zips.compress(data, item.w_clevel)
+
+				item.data_size = len(data)
+
+			items.append(item)
+
+		items.sort(key=lambda item: item.idx)
+		for item in items:
 			print(item)
 
 	def testing(self, dump = False):
@@ -142,3 +184,7 @@ class Section:
 				print("dump to:", filename)
 				with open(filename, "wb") as u:
 					u.write(data)
+
+				filenamemeta = filename + ".meta"
+				with open(filenamemeta, "w") as u:
+					yaml.safe_dump(item.meta(), u)

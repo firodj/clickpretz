@@ -169,7 +169,7 @@ class Section:
 			if start != f.tell():
 				print("warning: leftover")
 			else:
-				print("congratlation: complete processed")
+				print("congratulation: complete processed")
 			return None
 
 		item.chunk_id = unpack('<H', bindata)[0]
